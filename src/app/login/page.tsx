@@ -51,9 +51,8 @@ export default function LoginPage() {
                 setIsLoading(false);
             } else if (result?.success) {
                 console.log("✅ Login realizado! Redirecionando para /dashboard...");
-                // Manual redirect since server action was called with redirect: false
-                router.push("/dashboard");
-                router.refresh();
+                // Force full reload to ensure cookies are sent strictly
+                window.location.href = "/dashboard";
             } else {
                 console.warn("⚠️ Resposta inesperada do servidor:", result);
             }
