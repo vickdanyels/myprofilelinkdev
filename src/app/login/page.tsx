@@ -50,15 +50,21 @@ export default function LoginPage() {
                 setError(result.error);
                 setIsLoading(false);
             } else if (result?.success) {
-                console.log("✅ Login reportado como sucesso! Redirecionando...");
-                // Optional: force redirect client-side if server redirect fails
-                // window.location.href = "/dashboard"; 
+                console.log("✅ Login realizado! Redirecionando para /dashboard...");
+                // Manual redirect since server action was called with redirect: false
+                router.push("/dashboard");
+                router.refresh();
             } else {
-                console.warn("⚠️ Resposta inesperada do servidor (nem erro, nem sucesso explícito).", result);
+                console.warn("⚠️ Resposta inesperada do servidor:", result);
             }
         } catch (err) {
-            console.error("🔥 Erro CRÍTICO ao chamar a server action de login:", err);
-            setError("Erro de comunicação com o servidor. Verifique o console.");
+            // Ignore NEXT_REDIRECT error if it happens (though it shouldn't now)
+            if (String(err).includes("NEXT_REDIRECT")) {
+                console.log("✅ Redirecionamento detectado (via Erro).");
+                return;
+            }
+            console.error("🔥 Erro inesperado:", err);
+            setError("Erro ao tentar fazer login. Tente recarregar a página.");
             setIsLoading(false);
         }
     }

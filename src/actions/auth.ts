@@ -84,8 +84,10 @@ export async function login(formData: FormData) {
         await signIn("credentials", {
             email: rawData.email,
             password: rawData.password,
-            redirectTo: "/dashboard",
+            redirect: false,
         });
+
+        return { success: true };
     } catch (error) {
         if (error instanceof AuthError) {
             switch (error.type) {
@@ -95,8 +97,7 @@ export async function login(formData: FormData) {
                     return { error: "Erro ao fazer login" };
             }
         }
+        // If it's a redirect error (shouldn't happen with redirect: false, but good safety)
         throw error;
     }
-
-    return { success: true };
 }
