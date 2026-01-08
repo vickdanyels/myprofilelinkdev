@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String?
+  planType      String    @default("FREE") // FREE | PRO | DIAMOND
+  planStartedAt DateTime? // When the current plan was granted
+  proExpiresAt  DateTime? // null = lifetime/never expires
+  role          String    @default("USER") // USER | ADMIN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  profilePage   ProfilePage?
+}
+
+model ProfilePage {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  username    String   @unique // URL slug: domain.com/username
+  displayName String
+  bio         String?
+  avatarUrl   String?
+  
+  // Theme configuration (JSON stored as string for SQLite)
+  themeId     String   @default("default")
+  customColors String? // JSON: { primary, secondary, background, text }
+  backgroundUrl String?
+  
+  // Link Appearance
+  buttonSize    String   @default("regular") // small, regular, large
+  linksLayout   String   @default("list")    // list, grid, carousel
+  
+  // Live Background System
+  backgroundType    String   @default("none") // none, particles, wave, gradient, matrix
+  backgroundEnabled Boolean  @default(false)
+  
+  // Pro Features
+  removeBranding    Boolean  @default(false)
+  displayPlanFrame  Boolean  @default(false)
+  
+  published   Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  links       Link[]
+  pageViews   ProfilePageView[]
+  clickAnalytics ClickAnalytics[]
+}
+
+model Link {
+  id            String   @id @default(cuid())
+  profilePageId String
+  profilePage   ProfilePage @relation(fields: [profilePageId], references: [id], onDelete: Cascade)
+  
+  title         String
+  url           String
+  icon          String?  // Icon identifier (instagram, tiktok, youtube, etc.)
+  order         Int      @default(0)
+  isEnabled     Boolean  @default(true)
+  
+  // PRO features (structure ready)
+  ctaText       String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime? // Soft delete field
+  
+  clicks        ClickAnalytics[]
+}
+
+model ProfilePageView {
+  id            String      @id @default(cuid())
+  profilePageId String
+  profilePage   ProfilePage @relation(fields: [profilePageId], references: [id], onDelete: Cascade)
+  
+  timestamp     DateTime    @default(now())
+  userAgent     String?
+  referer       String?
+  country       String?
+}
+
+// Analytics structure (PRO feature - ready for future)
+model ClickAnalytics {
+  id        String   @id @default(cuid())
+  
+  profilePageId String // Required to track ownership even if link is deleted
+  profilePage   ProfilePage @relation(fields: [profilePageId], references: [id], onDelete: Cascade)
+
+  linkId    String?
+  link      Link?    @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  
+  // Snapshot data to preserve history if link is deleted
+  linkTitle String?
+  linkUrl   String?
+  
+  timestamp DateTime @default(now())
+  userAgent String?
+  referer   String?
+  country   String?
+}
+
+// Theme templates
+model Theme {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  isPremium   Boolean  @default(false)
+  
+  // Theme styles (JSON)
+  styles      String   // JSON with colors, fonts, effects
+  previewUrl  String?
+  
+  createdAt   DateTime @default(now())
+}
+
+// Plan structure (for future Stripe/MercadoPago integration)
+model Plan {
+  id          String   @id @default(cuid())
+  name        String   // FREE, PRO
+  price       Float    @default(0)
+  currency    String   @default("BRL")
+  interval    String?  // monthly, yearly
+  features    String   // JSON array of features
+  
+  createdAt   DateTime @default(now())
+}
+
+// Home Page Visit Tracking
+model HomePageView {
+  id          String   @id @default(cuid())
+  userAgent   String?
+  referrer    String?
+  createdAt   DateTime @default(now())
+}
