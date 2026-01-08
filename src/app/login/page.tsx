@@ -7,19 +7,58 @@ import { Button, Input, Card } from "@/components/ui";
 import { login } from "@/actions/auth";
 import { Zap } from "lucide-react";
 
+import { runDiagnostics } from "@/actions/diagnostics";
+import { useEffect } from "react";
+
 export default function LoginPage() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
+    useEffect(() => {
+        // Run diagnostics on mount
+        const checkSystem = async () => {
+            console.log("🔍 Iniciando Diagnóstico do Sistema...");
+            try {
+                const result = await runDiagnostics();
+                console.log("✅ Resultado do Diagnóstico (Servidor):", result);
+
+                if (result.env.AUTH_TRUST_HOST !== 'true') {
+                    console.warn("⚠️ ALERTA: AUTH_TRUST_HOST não está definido como 'true'. Isso pode causar loops de login.");
+                }
+                if (result.db.status !== 'connected') {
+                    console.error("❌ ERRO CRÍTICO: Falha na conexão com o Banco de Dados.", result.db.message);
+                }
+            } catch (err) {
+                console.error("❌ Falha ao rodar diagnóstico:", err);
+            }
+        };
+        checkSystem();
+    }, []);
+
     async function handleSubmit(formData: FormData) {
         setIsLoading(true);
         setError(null);
+        console.log("🚀 Tentando fazer login...", Object.fromEntries(formData));
 
-        const result = await login(formData);
+        try {
+            const result = await login(formData);
+            console.log("📩 Resposta do servidor:", result);
 
-        if (result?.error) {
-            setError(result.error);
+            if (result?.error) {
+                console.error("❌ Erro no login:", result.error);
+                setError(result.error);
+                setIsLoading(false);
+            } else if (result?.success) {
+                console.log("✅ Login reportado como sucesso! Redirecionando...");
+                // Optional: force redirect client-side if server redirect fails
+                // window.location.href = "/dashboard"; 
+            } else {
+                console.warn("⚠️ Resposta inesperada do servidor (nem erro, nem sucesso explícito).", result);
+            }
+        } catch (err) {
+            console.error("🔥 Erro CRÍTICO ao chamar a server action de login:", err);
+            setError("Erro de comunicação com o servidor. Verifique o console.");
             setIsLoading(false);
         }
     }
