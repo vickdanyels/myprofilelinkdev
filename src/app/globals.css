@@ -191,16 +191,21 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(var(--color-surface));
+  background: #0f1e24;
+  /* Dark Teal-Black */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgb(var(--color-primary) / 0.5), rgb(var(--color-accent) / 0.5));
+  background: #06b6d4;
+  /* Cyan-500 */
   border-radius: 4px;
+  border: 2px solid #0f1e24;
+  /* Creates padding effect */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgb(var(--color-primary)), rgb(var(--color-accent)));
+  background: #22d3ee;
+  /* Cyan-400 */
 }
 
 /* ========================
@@ -256,6 +261,24 @@ body {
 /* ========================
    UTILITY CLASSES
    ======================== */
+
+/* GPU Acceleration - Use on animated containers for smooth performance */
+.gpu-accelerated {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 3D Transform Context - Required for preserve-3d children */
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+/* Content Visibility - Lazy render off-screen sections */
+.lazy-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
 
 /* Glass Effect - Basic */
 .glass {
@@ -1552,4 +1575,217 @@ body {
   #profile-header {
     padding-top: 25px !important;
   }
+}
+
+/* CINEMATIC HERO ANIMATIONS */
+@keyframes cinematic-bg {
+  0% {
+    opacity: 0;
+  }
+
+  5% {
+    opacity: 1;
+  }
+
+  /* Hold until 20% (2s) */
+  20% {
+    opacity: 1;
+  }
+
+  /* Fade out by 25% (2.5s) - Creates 0.5s overlap */
+  25% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes cinematic-bg-phase-1 {
+  0% {
+    opacity: 0;
+  }
+
+  5% {
+    opacity: 1;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  25% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes cinematic-screen {
+  0% {
+    transform: translateY(120%);
+    opacity: 0;
+  }
+
+  /* Impact Snap - Clean without distortion */
+  4% {
+    transform: translateY(-2%);
+    opacity: 1;
+  }
+
+  5% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Hold Phase */
+  18% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Anticipation (Pull Down aiming Up) */
+  19% {
+    transform: translateY(2%);
+  }
+
+  /* VERTICAL SCROLL EXIT - With Fade Out */
+  25% {
+    transform: translateY(-150%);
+    opacity: 0;
+  }
+
+  /* Instant Reset */
+  25.1% {
+    opacity: 0;
+    transform: translateY(-150%);
+  }
+
+  100% {
+    transform: translateY(-150%);
+    opacity: 0;
+  }
+}
+
+@keyframes cinematic-hand {
+  0% {
+    transform: translateY(110%) rotateX(-20deg) rotateY(20deg);
+    opacity: 0;
+  }
+
+  /* HIDDEN PHASE: 0-12% (1.5s) */
+  12% {
+    transform: translateY(110%) rotateX(-20deg) rotateY(20deg);
+    opacity: 0;
+  }
+
+  /* ENTRY PHASE: 12-19% (0.7s) - Smoother & Bouncy */
+  14% {
+    opacity: 1;
+    transform: translateY(60%) rotateX(-10deg) rotateY(10deg);
+  }
+
+  16% {
+    transform: translateY(15%) rotateX(-5deg) rotateY(5deg);
+  }
+
+  18% {
+    /* Overshoot slightly upwards */
+    transform: translateY(8%) rotateX(0deg) rotateY(0deg);
+  }
+
+  19% {
+    /* Settle */
+    transform: translateY(10%) rotateX(0deg) rotateY(0deg);
+  }
+
+  /* IDLE PHASE: 19-85% (9s) - Long Sway */
+  28% {
+    transform: translateY(10.2%) rotateX(0.5deg) rotateY(0.5deg);
+  }
+
+  38% {
+    transform: translateY(10.8%) rotateX(1deg) rotateY(1deg);
+  }
+
+  48% {
+    transform: translateY(10.2%) rotateX(0.5deg) rotateY(0.5deg);
+  }
+
+  58% {
+    transform: translateY(9.2%) rotateX(-0.5deg) rotateY(-0.5deg);
+  }
+
+  68% {
+    transform: translateY(8.8%) rotateX(-1deg) rotateY(-1deg);
+  }
+
+  78% {
+    transform: translateY(9.2%) rotateX(-0.5deg) rotateY(-0.5deg);
+  }
+
+  85% {
+    transform: translateY(10%) rotateX(0deg) rotateY(0deg);
+  }
+
+  /* EXIT PHASE: 85-89% (0.5s) */
+  86% {
+    transform: translateY(8.5%) rotateX(-1.5deg);
+  }
+
+  87% {
+    transform: translateY(15%) rotateX(0deg);
+  }
+
+  88% {
+    transform: translateY(60%) rotateX(10deg);
+  }
+
+  89% {
+    transform: translateY(110%) rotateX(20deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+}
+
+.animate-cinematic-bg {
+  animation: cinematic-bg 10s linear infinite;
+}
+
+.animate-cinematic-bg-phase-1 {
+  animation: cinematic-bg-phase-1 10s linear infinite;
+}
+
+.animate-cinematic-screen {
+  animation: cinematic-screen 10s linear infinite;
+}
+
+.animate-cinematic-hand {
+  animation: cinematic-hand 10s linear infinite;
+}
+
+/* Gentle Background Movement */
+@keyframes slow-zoom {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 20s ease-in-out infinite;
 }

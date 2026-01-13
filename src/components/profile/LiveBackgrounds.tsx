@@ -33,12 +33,14 @@ export const LiveBackgrounds = memo(function LiveBackgrounds({ type, enabled, th
             {type === "sobrancelhas" && <IconFloatBackground colors={themeColors} icons={["〰️", "✏️"]} isText />}
             {type === "cabelos" && <IconFloatBackground colors={themeColors} icons={["✂️", "💈", "💇"]} isText />}
             {type === "petshop" && <IconFloatBackground colors={themeColors} icons={["🐾", "🐾", "🐕", "🐈"]} isText />}
+            {/* New Technological Background */}
+            {type === "tech-grid" && <TechGridBackground colors={themeColors} />}
         </div>
     );
 });
 
 // --- Hyperliquid Background ---
-function HyperliquidBackground({ colors }: { colors: LiveBackgroundsProps["themeColors"] }) {
+export function HyperliquidBackground({ colors }: { colors: LiveBackgroundsProps["themeColors"] }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -75,47 +77,52 @@ function HyperliquidBackground({ colors }: { colors: LiveBackgroundsProps["theme
 
             const rows = Math.ceil(height / spacing) + 2;
 
-            for (let i = -1; i < rows; i++) {
-                const y = i * spacing;
-                // Stronger compound liquid effect for the line (macro movement)
-                const lineYOffset = Math.sin(time * 2 + i * 0.4) * 45 + Math.sin(time * 3.5 + i * 0.2) * 25;
+            const drawTextLayer = (lineWidth: number, opacity: number, blur: boolean = false) => {
+                ctx.lineWidth = lineWidth;
+                ctx.strokeStyle = `rgb(${strokeColor} / ${opacity})`;
+                ctx.shadowBlur = blur ? 0 : 0; // Explicitly disable blur
+                ctx.shadowColor = "transparent";
 
-                // Restored liquid movement
-                const lineXOffset = Math.cos(time * 1.8 + i * 0.3) * 70 + Math.sin(time * 2.5 + i * 0.5) * 35;
+                for (let i = -1; i < rows; i++) {
+                    const y = i * spacing;
+                    const lineYOffset = Math.sin(time * 2 + i * 0.4) * 45 + Math.sin(time * 3.5 + i * 0.2) * 25;
+                    const lineXOffset = Math.cos(time * 1.8 + i * 0.3) * 70 + Math.sin(time * 2.5 + i * 0.5) * 35;
 
-                ctx.strokeStyle = `rgb(${strokeColor} / 0.4)`;
+                    const drawWavyLine = (startX: number, startY: number) => {
+                        let currentX = startX;
+                        for (let charIndex = 0; charIndex < text.length; charIndex++) {
+                            const char = text[charIndex];
+                            const charYOffset =
+                                Math.sin(time * 5 + charIndex * 0.6) * 22 +
+                                Math.sin(time * 3 + charIndex * 0.4) * 12;
 
-                // Function to draw wavy text
-                const drawWavyLine = (startX: number, startY: number) => {
-                    let currentX = startX;
-                    for (let charIndex = 0; charIndex < text.length; charIndex++) {
-                        const char = text[charIndex];
-                        // Per-character wave effect (micro movement/liquid feel)
-                        // Increased frequency and amplitude, added secondary wave for complexity
-                        const charYOffset =
-                            Math.sin(time * 5 + charIndex * 0.6) * 22 +
-                            Math.sin(time * 3 + charIndex * 0.4) * 12;
+                            ctx.strokeText(char, currentX, startY + charYOffset);
+                            currentX += charWidth;
+                        }
+                    };
 
-                        ctx.strokeText(char, currentX, startY + charYOffset);
-                        currentX += charWidth;
+                    const totalWidth = text.length * charWidth;
+                    const gap = 0;
+                    const repeatDistance = totalWidth + gap;
+                    const baseOffset = (width / 2 + lineXOffset) % repeatDistance;
+                    const instances = Math.ceil(width / repeatDistance) + 4;
+
+                    for (let k = -3; k < instances; k++) {
+                        drawWavyLine(baseOffset + k * repeatDistance - totalWidth / 2, y + lineYOffset);
                     }
-                };
-
-                // Calculate total text width for centering and repetition
-                const totalWidth = text.length * charWidth;
-                const gap = 0; // No gap for continuous stream
-                const repeatDistance = totalWidth + gap;
-
-                // Calculate starting position to ensure coverage considering movement
-                const baseOffset = (width / 2 + lineXOffset) % repeatDistance;
-
-                // Draw enough copies to cover the screen width
-                const instances = Math.ceil(width / repeatDistance) + 4; // Extra buffer
-
-                for (let k = -3; k < instances; k++) {
-                    drawWavyLine(baseOffset + k * repeatDistance - totalWidth / 2, y + lineYOffset);
                 }
-            }
+            };
+
+            // Multipass rendering for Fake Glow (High Performance)
+
+            // Pass 1: Wide Glow (Low Opacity) - Replaces shadowBlur 50
+            drawTextLayer(15, 0.15);
+
+            // Pass 2: Medium Glow
+            drawTextLayer(6, 0.3);
+
+            // Pass 3: Core Brightness
+            drawTextLayer(2, 1.0);
         };
 
         const animate = () => {
@@ -452,6 +459,20 @@ function ParticlesBackground({ colors }: { colors: LiveBackgroundsProps["themeCo
 function WaveBackground({ colors }: { colors: LiveBackgroundsProps["themeColors"] }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
+    // Refs for color transition
+    const colorRefs = useRef({
+        currentPrimary: colors.primary.split(" ").map(Number),
+        targetPrimary: colors.primary.split(" ").map(Number),
+        currentAccent: colors.accent.split(" ").map(Number),
+        targetAccent: colors.accent.split(" ").map(Number),
+    });
+
+    // Update targets when props change
+    useEffect(() => {
+        colorRefs.current.targetPrimary = colors.primary.split(" ").map(Number);
+        colorRefs.current.targetAccent = colors.accent.split(" ").map(Number);
+    }, [colors]);
+
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -470,15 +491,30 @@ function WaveBackground({ colors }: { colors: LiveBackgroundsProps["themeColors"
             canvas.height = height;
         };
 
+        const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
+
         const animate = () => {
             ctx.clearRect(0, 0, width, height);
             time += 0.005;
 
+            // Interpolate Colors
+            const { currentPrimary, targetPrimary, currentAccent, targetAccent } = colorRefs.current;
+
+            // Smooth lerp factor (0.05)
+            for (let i = 0; i < 3; i++) {
+                currentPrimary[i] = lerp(currentPrimary[i], targetPrimary[i], 0.05);
+                currentAccent[i] = lerp(currentAccent[i], targetAccent[i], 0.05);
+            }
+
+            const primaryStr = `${Math.round(currentPrimary[0])} ${Math.round(currentPrimary[1])} ${Math.round(currentPrimary[2])}`;
+            const accentStr = `${Math.round(currentAccent[0])} ${Math.round(currentAccent[1])} ${Math.round(currentAccent[2])}`;
+
+
             // Draw multiple waves
             for (let i = 0; i < 3; i++) {
                 ctx.beginPath();
-                const color = i % 2 === 0 ? colors.primary : colors.accent;
-                const alpha = 0.1 - (i * 0.02);
+                const color = i % 2 === 0 ? primaryStr : accentStr;
+                const alpha = 0.3 - (i * 0.05); // More vibrant opacity (0.3 down to 0.2)
                 ctx.fillStyle = `rgb(${color} / ${alpha})`;
 
                 // Start point
@@ -509,7 +545,7 @@ function WaveBackground({ colors }: { colors: LiveBackgroundsProps["themeColors"
             window.removeEventListener("resize", handleResize);
             cancelAnimationFrame(animationFrameId);
         };
-    }, [colors]);
+    }, []); // Run ONCE, color updates handled by refs
 
     return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
 }
@@ -1592,4 +1628,105 @@ function GalaxyBackground({ themeColors }: { themeColors: any }) {
             className="fixed inset-0 w-full h-full pointer-events-none z-0"
         />
     );
+}
+
+// --- Tech Grid Background (Cyber Perspective) ---
+export function TechGridBackground({ colors }: { colors: LiveBackgroundsProps["themeColors"] }) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        let animationFrameId: number;
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let time = 0;
+
+        const handleResize = () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        };
+
+        const animate = () => {
+            // Clear with dark fade for trail effect? No, clean abstract look.
+            ctx.fillStyle = "#000000"; // Solid black base
+            ctx.fillRect(0, 0, width, height);
+
+            time += 2; // Speed of movement
+
+            // Perspective Parameters
+            const horizonY = height * 0.2; // Horizon line position (High horizon = looking down at floor)
+            // Let's create a "Data Highway"
+
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = `rgb(103 254 253 / 0.3)`; // #67FEFD converted to RGB for opacity
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = `rgb(103 254 253 / 0.5)`;
+
+            // 1. VERTICAL LINES (Converging rays)
+            // Vanishing point is at (width/2, horizonY)
+            const vpX = width / 2;
+            const vpY = horizonY; // Horizon
+
+            // Draw rays from vanishing point upwards/downwards
+            const raysCount = 20;
+            ctx.beginPath();
+            for (let i = -raysCount; i <= raysCount; i++) {
+                const bottomX = width / 2 + (i * 150);
+                ctx.moveTo(vpX, vpY);
+                ctx.lineTo(bottomX, height);
+            }
+            ctx.stroke();
+
+            // 2. HORIZONTAL LINES (Moving towards viewer)
+            const numLines = 30;
+            const phase = (time % 100) / 100; // 0 to 1
+
+            ctx.beginPath();
+            for (let i = 0; i < numLines; i++) {
+                // Exponential spacing for perspective
+                let z = (i / numLines) + phase / numLines;
+                if (z > 1) z -= 1;
+
+                // y position
+                const y = horizonY + (Math.pow(z, 2)) * (height - horizonY);
+
+                if (y > height) continue;
+
+                const alpha = z * 0.8;
+                ctx.strokeStyle = `rgb(103 254 253 / ${alpha})`;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            // Vignette
+            const grad = ctx.createLinearGradient(0, 0, 0, height);
+            grad.addColorStop(0, "black");
+            grad.addColorStop(0.2, "transparent");
+            grad.addColorStop(0.8, "transparent");
+            grad.addColorStop(1, "black");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+
+            animationFrameId = requestAnimationFrame(animate);
+        };
+
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        animate();
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [colors]);
+
+    return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-60" />;
 }

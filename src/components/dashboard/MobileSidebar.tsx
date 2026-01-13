@@ -67,27 +67,27 @@ export function MobileSidebar({ user, signOutAction }: MobileSidebarProps) {
 
             {/* Mobile Sidebar with slide animation */}
             <aside
-                className={`fixed top-0 left-0 z-50 h-full w-72 flex flex-col transition-transform duration-300 ease-out lg:hidden bg-[rgb(var(--color-surface))] border-r border-[rgb(var(--color-border))] shadow-2xl ${isOpen ? "translate-x-0" : "-translate-x-full"
+                className={`fixed top-0 left-0 z-50 h-full w-72 flex flex-col transition-transform duration-300 ease-out lg:hidden bg-black/95 backdrop-blur-xl border-r border-white/10 shadow-2xl ${isOpen ? "translate-x-0" : "-translate-x-full"
                     }`}
             >
-                {/* Translucent theme color overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[rgb(var(--color-primary))]/10 via-transparent to-[rgb(var(--color-accent))]/5 pointer-events-none" />
+                {/* Hyperliquid Glow Effect - matching home header */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200%] h-[300px] bg-cyan-500/10 blur-[100px] rounded-full" />
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[200%] h-[200px] bg-amber-500/5 blur-[80px] rounded-full" />
+                </div>
 
                 {/* Header with Close Button */}
-                <div className="relative p-4 flex items-center justify-between border-b border-[rgb(var(--color-primary))]/20 bg-gradient-to-r from-[rgb(var(--color-primary))]/10 to-transparent">
-                    <Link href="/" className="inline-flex items-center gap-2 text-lg font-bold" onClick={closeMenu}>
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[rgb(var(--color-primary))] to-[rgb(var(--color-accent))] flex items-center justify-center shadow-lg shadow-[rgb(var(--color-primary))]/30">
-                            <Zap className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="gradient-text">MyProfile</span>
-                        <span className="text-[rgb(var(--color-text-primary))]">Pro</span>
+                <div className="relative p-4 flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-cyan-500/10 to-transparent">
+                    <Link href="/" className="inline-flex items-center gap-1 text-lg font-bold" onClick={closeMenu}>
+                        <span className="text-white">My</span>
+                        <span className="text-cyan-400">Profile</span>
                     </Link>
                     <button
                         onClick={closeMenu}
-                        className="p-2.5 rounded-xl bg-[rgb(var(--color-surface-elevated))] hover:bg-red-500/20 transition-colors group"
+                        className="p-2.5 rounded-xl bg-white/5 hover:bg-red-500/20 transition-colors group"
                         aria-label="Fechar menu"
                     >
-                        <X className="w-5 h-5 text-[rgb(var(--color-text-secondary))] group-hover:text-red-500 transition-colors" />
+                        <X className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
                     </button>
                 </div>
 
@@ -106,17 +106,17 @@ export function MobileSidebar({ user, signOutAction }: MobileSidebarProps) {
                     )}
                 </nav>
 
-                {/* User Section with colored glow */}
-                <div className="relative p-4 border-t border-[rgb(var(--color-primary))]/20 bg-gradient-to-t from-[rgb(var(--color-primary))]/10 to-transparent">
+                {/* User Section */}
+                <div className="relative p-4 border-t border-white/10 bg-gradient-to-t from-cyan-500/5 to-transparent">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[rgb(var(--color-primary))] to-[rgb(var(--color-accent))] flex items-center justify-center shadow-lg shadow-[rgb(var(--color-primary))]/30">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-amber-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
                             <User className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[rgb(var(--color-text-primary))] truncate">
+                            <p className="text-sm font-medium text-white truncate">
                                 {user.name || user.email}
                             </p>
-                            <p className="text-xs text-[rgb(var(--color-text-muted))] truncate">
+                            <p className="text-xs text-gray-400 truncate">
                                 {user.email}
                             </p>
                         </div>
@@ -125,7 +125,7 @@ export function MobileSidebar({ user, signOutAction }: MobileSidebarProps) {
                     <form action={signOutAction}>
                         <button
                             type="submit"
-                            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[rgb(var(--color-text-secondary))] hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
+                            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
                         >
                             <LogOut className="w-4 h-4" />
                             Sair
@@ -152,7 +152,7 @@ function MobileNavItem({
         <Link
             href={href}
             onClick={onClick}
-            className="flex items-center gap-3 px-4 py-3.5 text-[rgb(var(--color-text-secondary))] hover:text-[rgb(var(--color-text-primary))] hover:bg-[rgb(var(--color-surface-elevated))] rounded-xl transition-colors"
+            className="flex items-center gap-3 px-4 py-3.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
         >
             <Icon className="w-5 h-5" />
             <span className="font-medium">{children}</span>

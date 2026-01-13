@@ -64,16 +64,19 @@ export function BannerHeader({
 
     const bannerContent = (
         <div
-            className="w-full bg-gradient-to-r from-[rgb(var(--color-primary))]/20 via-[rgb(var(--color-surface))] to-[rgb(var(--color-accent))]/20 border-b border-[rgb(var(--color-border))] flex items-center justify-center overflow-hidden"
+            className="w-full bg-black/5 backdrop-blur-md border-b border-white/5 flex items-center justify-center overflow-hidden relative"
             style={{ height: `${bannerHeight}px` }}
         >
+            {/* Hyperliquid Glow Effect - matching home header */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-50%] left-1/2 -translate-x-1/2 w-[60%] h-[200px] bg-cyan-500/15 blur-[100px] rounded-full" />
+                <div className="absolute top-[-50%] left-1/2 -translate-x-1/2 w-[40%] h-[200px] bg-amber-500/10 blur-[80px] rounded-full" />
+            </div>
+
             {/* Placeholder when no banner image is set */}
             <div className="relative w-full h-full flex items-center justify-center">
-                {/* Show gradient placeholder by default */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[rgb(var(--color-primary))]/10 via-transparent to-[rgb(var(--color-accent))]/10" />
-
                 {/* Banner text placeholder - remove when adding real banner */}
-                <span className="relative text-sm text-[rgb(var(--color-text-muted))] font-medium tracking-wide">
+                <span className="relative text-sm text-gray-500 font-medium tracking-wide">
                     BANNER • {bannerHeight === 80 ? 'DESKTOP 1920×80' : bannerHeight === 70 ? 'TABLET 1024×70' : 'MOBILE 768×60'}
                 </span>
             </div>

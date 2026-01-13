@@ -210,7 +210,7 @@ export function ProfilePageContent({
 
                         {profile.bio && (
                             <p
-                                className="mt-2 text-lg font-bold max-w-sm mx-auto px-4 leading-relaxed break-words animate-zoom-pulse"
+                                className="mt-2 text-lg font-bold max-w-sm mx-auto px-4 leading-relaxed break-words whitespace-pre-wrap animate-zoom-pulse"
                                 style={{
                                     color: (theme.id === 'minimalist' && profile.backgroundType === 'galaxy') ? '#ffffff' : `rgb(${theme.colors.text})`,
                                     textShadow: "0 2px 4px rgba(0,0,0,0.5)", // Added shadow for contrast

@@ -1,350 +1,160 @@
-import Link from "next/link";
-import { Button } from "@/components/ui";
-import {
-  Zap,
-  Link2,
-  Palette,
-  BarChart3,
-  Smartphone,
-  Shield,
-  ArrowRight,
-  Check,
-  Sparkles,
-} from "lucide-react";
+"use client";
 
+import { useEffect } from "react";
+import { CinematicHero } from "@/components/home/CinematicHero";
+import { Header } from "@/components/layout/Header";
+import { SecondaryHero } from "@/components/home/SecondaryHero";
+import { FeaturesComparison } from "@/components/home/FeaturesComparison";
+import { TrustHero } from "@/components/home/TrustHero";
+import { Testimonials } from "@/components/home/Testimonials";
+import { Footer } from "@/components/home/Footer";
 import { trackHomeVisit } from "@/actions/analytics";
 
+import { LiveBackgrounds } from "@/components/profile/LiveBackgrounds";
+
+const THEME = { primary: "236 72 153", accent: "6 182 212", background: "0 0 0" };
+
 export default function HomePage() {
-  trackHomeVisit();
+  useEffect(() => {
+    trackHomeVisit();
+  }, []);
 
   return (
-    <div className="min-h-screen relative">
-      {/* Video Background */}
-      <div className="video-background">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="video-bg"
-        >
-          <source src="/background-video.mp4?v=2" type="video/mp4" />
-        </video>
-        <div className="video-overlay" />
+    <div className="min-h-screen relative flex flex-col overflow-x-hidden bg-black">
+      {/* Global Background Particles */}
+      {/* Global Background - Elegant Cyber Grid */}
+      <div className="fixed inset-0 z-0">
+        <LiveBackgrounds type="tech-grid" enabled={true} themeColors={THEME} />
       </div>
 
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-[rgb(var(--color-border))]/50 bg-[rgb(var(--color-background))]/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[rgb(var(--color-primary))] to-[rgb(var(--color-accent))] flex items-center justify-center shadow-lg shadow-[rgb(var(--color-primary))]/30">
-                <Zap className="w-5 h-5 text-white" />
+      <Header />
+
+      {/* Unified Cinematic Hero (Background + Animation) */}
+      <main className="relative z-10 w-full">
+        <CinematicHero />
+      </main>
+
+      {/* Elegant Separator (Cyan) */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-[rgb(var(--color-accent))] to-transparent opacity-80 shadow-[0_0_15px_rgba(6,182,212,0.5)] relative z-20" />
+
+      {/* Persuasive Introduction Section - Premium Redesign */}
+      <section className="relative z-10 w-full py-32 bg-transparent perspective-[2000px]">
+
+        <div className="container mx-auto px-4">
+
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 relative z-20">
+
+            {/* --- CARD 1: THE PROBLEM (Styled like Solution) --- */}
+            <div className="group relative rounded-3xl transition-all duration-500 hover:scale-[1.02] hover:-rotate-1">
+              {/* Cyan Glow (Uniform Style) */}
+              <div className="absolute -inset-0.5 bg-gradient-to-br from-[#67FEFD] to-blue-600 rounded-3xl blur opacity-20 group-hover:opacity-100 group-hover:blur-xl transition duration-700" />
+
+              <div className="relative h-full !min-h-[300px] p-12 md:p-20 rounded-3xl bg-black/60 backdrop-blur-3xl border border-[rgb(var(--color-accent)_/_0.3)] shadow-2xl flex flex-col items-center text-center overflow-hidden">
+
+                {/* Shimmer Effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-20 transition duration-700 pointer-events-none" />
+                <div className="absolute -inset-full top-0 block h-[200%] w-1/2 -skew-x-12 bg-gradient-to-r from-transparent to-white/20 opacity-0 group-hover:animate-shine" />
+
+                <div className="relative z-10 flex flex-col items-center h-full w-full">
+                  <div style={{ marginTop: "10px" }} className="inline-flex items-center gap-2 mb-6 p-2 pr-4 rounded-full bg-red-500/10 border border-red-500/20">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </span>
+                    <span style={{ paddingRight: "20px" }} className="text-red-500 font-bold text-xs uppercase tracking-wider">O Problema</span>
+                  </div>
+
+                  <h2 className="!text-[1.875rem] font-bold leading-tight mb-6 text-white/90">
+                    Links dispersos matam conversão.
+                  </h2>
+
+                  <p className="text-gray-400 text-lg leading-relaxed max-w-md">
+                    Seu público se perde tentando te encontrar. Cada clique extra é um seguidor a menos.
+                    <strong className="block mt-4 text-white">O caos digital te custa caro.</strong>
+                  </p>
+
+                  <button
+                    style={{ marginTop: "20px", marginBottom: "20px" }}
+                    className="group/btn relative px-8 py-3 rounded-full bg-red-500/10 border border-red-500/50 text-red-500 font-bold text-sm uppercase tracking-widest overflow-hidden transition-all hover:bg-red-500 hover:text-white hover:shadow-[0_0_40px_rgba(239,68,68,0.4)] w-full max-w-[280px]"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
+                    <span className="relative flex items-center justify-center gap-3">
+                      Saiba mais ...
+                      <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </span>
+                  </button>
+                </div>
               </div>
-              <span className="gradient-text">MyProfile</span>
-              <span className="text-[rgb(var(--color-text-primary))]">Pro</span>
-            </Link>
+            </div>
 
-            {/* Nav */}
-            <nav className="hidden md:flex items-center gap-8">
-              <a
-                href="#features"
-                className="text-[rgb(var(--color-text-secondary))] hover:text-[rgb(var(--color-accent))] transition-colors"
-              >
-                Recursos
-              </a>
-              <a
-                href="#pricing"
-                className="text-[rgb(var(--color-text-secondary))] hover:text-[rgb(var(--color-accent))] transition-colors"
-              >
-                Preços
-              </a>
-            </nav>
+            {/* --- CARD 2: THE SOLUTION --- */}
+            <div className="group relative rounded-3xl transition-all duration-500 hover:scale-[1.02] hover:rotate-1">
+              {/* Cyan Glow */}
+              <div className="absolute -inset-0.5 bg-gradient-to-br from-[#67FEFD] to-blue-600 rounded-3xl blur opacity-30 group-hover:opacity-100 group-hover:blur-xl transition duration-700" />
 
-            {/* CTA */}
-            <div className="flex items-center gap-4">
-              <Link
-                href="/login"
-                className="text-[rgb(var(--color-text-secondary))] hover:text-[rgb(var(--color-text-primary))] transition-colors hidden sm:block"
-              >
-                Entrar
-              </Link>
-              <Link href="/register">
-                <Button size="sm">Começar grátis</Button>
-              </Link>
+              <div className="relative h-full !min-h-[300px] p-12 md:p-20 rounded-3xl bg-black/60 backdrop-blur-3xl border border-[rgb(var(--color-accent)_/_0.3)] shadow-2xl flex flex-col items-center text-center overflow-hidden">
+
+                {/* Shimmer Effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-20 transition duration-700 pointer-events-none" />
+                <div className="absolute -inset-full top-0 block h-[200%] w-1/2 -skew-x-12 bg-gradient-to-r from-transparent to-white/20 opacity-0 group-hover:animate-shine" />
+
+                <div className="relative z-10 flex flex-col items-center h-full w-full">
+                  <div style={{ marginTop: "10px" }} className="inline-flex items-center gap-2 mb-6 p-2 pr-4 rounded-full bg-[rgb(var(--color-accent)_/_0.1)] border border-[rgb(var(--color-accent)_/_0.2)]">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[rgb(var(--color-accent))] text-black">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    </span>
+                    <span style={{ paddingRight: "20px" }} className="text-[rgb(var(--color-accent))] font-bold text-xs uppercase tracking-wider">A Solução Definitiva</span>
+                  </div>
+
+                  <h3 className="!text-[1.875rem] font-bold text-white mb-6">
+                    Centralize. Engaje. <span className="text-[rgb(var(--color-accent))] drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]">Domine.</span>
+                  </h3>
+
+                  <p className="text-gray-400 text-lg leading-relaxed max-w-md">
+                    Um único link inteligente. Design de elite. Carregamento instantâneo.
+                    <strong className="block mt-4 text-white">Tudo organizado, DO SEU JEITO!</strong>
+                  </p>
+
+                  <button
+                    style={{ marginTop: "20px", marginBottom: "20px" }}
+                    className="group/btn relative px-8 py-3 rounded-full bg-[rgb(var(--color-accent)_/_0.1)] border border-[rgb(var(--color-accent)_/_0.5)] text-[rgb(var(--color-accent))] font-bold text-sm uppercase tracking-widest overflow-hidden transition-all hover:bg-[rgb(var(--color-accent))] hover:text-black hover:shadow-[0_0_40px_rgba(6,182,212,0.4)] w-full max-w-[280px]"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
+                    <span className="relative flex items-center justify-center gap-3">
+                      Teste Grátis
+                      <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-24 px-4">
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[rgb(var(--color-surface))]/80 border border-[rgb(var(--color-border))] text-sm mb-8">
-            <Sparkles className="w-4 h-4 text-[rgb(var(--color-accent))]" />
-            <span className="text-[rgb(var(--color-text-secondary))]">
-              A plataforma premium para criadores
-            </span>
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[rgb(var(--color-text-primary))] leading-tight mb-6">
-            Todos os seus links em{" "}
-            <span className="gradient-text">uma página incrível</span>
-          </h1>
-
-          <p className="text-lg sm:text-xl text-[rgb(var(--color-text-secondary))] max-w-2xl mx-auto mb-10">
-            Crie sua bio digital profissional em minutos. Compartilhe links,
-            destaque seu trabalho e converta seguidores em clientes.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Link href="/register">
-              <Button size="lg" className="shadow-lg shadow-[rgb(var(--color-primary))]/30">
-                Criar minha página grátis
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-            </Link>
-            <Link href="#features">
-              <Button variant="secondary" size="lg">
-                Ver recursos
-              </Button>
-            </Link>
-          </div>
-
-          {/* Trust Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-[rgb(var(--color-text-muted))]">
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-[rgb(var(--color-success))]" />
-              Grátis para começar
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-[rgb(var(--color-success))]" />
-              Setup em 2 minutos
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-[rgb(var(--color-success))]" />
-              Sem cartão de crédito
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="relative py-24 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[rgb(var(--color-text-primary))] mb-4">
-              Tudo que você precisa para{" "}
-              <span className="gradient-text">crescer online</span>
-            </h2>
-            <p className="text-[rgb(var(--color-text-secondary))] max-w-xl mx-auto">
-              Recursos profissionais para impulsionar sua presença digital
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FeatureCard
-              icon={<Link2 className="w-6 h-6" />}
-              title="Links ilimitados"
-              description="Adicione todos os seus links importantes em um só lugar"
-            />
-            <FeatureCard
-              icon={<Palette className="w-6 h-6" />}
-              title="Temas personalizados"
-              description="Combine com sua marca usando cores e estilos únicos"
-            />
-            <FeatureCard
-              icon={<BarChart3 className="w-6 h-6" />}
-              title="Analytics avançado"
-              description="Acompanhe cliques e entenda seu público"
-              badge="PRO"
-            />
-            <FeatureCard
-              icon={<Smartphone className="w-6 h-6" />}
-              title="Mobile-first"
-              description="Experiência perfeita em qualquer dispositivo"
-            />
-            <FeatureCard
-              icon={<Shield className="w-6 h-6" />}
-              title="Seguro e rápido"
-              description="Performance otimizada com proteção de dados"
-            />
-            <FeatureCard
-              icon={<Zap className="w-6 h-6" />}
-              title="Domínio próprio"
-              description="Use seu próprio domínio para mais profissionalismo"
-              badge="PRO"
-            />
-          </div>
-        </div>
-      </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="relative py-24 px-4 bg-[rgb(var(--color-surface))]/30">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[rgb(var(--color-text-primary))] mb-4">
-              Planos para cada necessidade
-            </h2>
-            <p className="text-[rgb(var(--color-text-secondary))]">
-              Comece grátis e evolua conforme seu crescimento
-            </p>
-          </div>
+      {/* Secondary Hero - Cinematic Conclusion */}
+      <div id="funcionalidades">
+        <SecondaryHero />
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Free Plan */}
-            <div className="p-8 rounded-2xl bg-[rgb(var(--color-surface))] border border-[rgb(var(--color-border))]">
-              <h3 className="text-xl font-bold text-[rgb(var(--color-text-primary))] mb-2">
-                Free
-              </h3>
-              <p className="text-[rgb(var(--color-text-secondary))] mb-6">
-                Perfeito para começar
-              </p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-[rgb(var(--color-text-primary))]">
-                  R$0
-                </span>
-                <span className="text-[rgb(var(--color-text-muted))]">/mês</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <PricingFeature>1 página pública</PricingFeature>
-                <PricingFeature>Links para redes sociais</PricingFeature>
-                <PricingFeature>Tema padrão</PricingFeature>
-                <PricingFeature>URL personalizada</PricingFeature>
-              </ul>
-              <Link href="/register" className="block">
-                <Button variant="secondary" fullWidth>
-                  Começar grátis
-                </Button>
-              </Link>
-            </div>
+      {/* Features & Pricing Comparison */}
+      <div id="precos" className="relative z-10">
+        <FeaturesComparison />
+      </div>
 
-            {/* Pro Plan */}
-            <div className="relative p-8 rounded-2xl bg-gradient-to-br from-[rgb(var(--color-primary))]/10 to-[rgb(var(--color-accent))]/10 border border-[rgb(var(--color-primary))]/50 shadow-lg shadow-[rgb(var(--color-primary))]/20">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-[rgb(var(--color-primary))] to-[rgb(var(--color-accent))] text-white text-sm font-medium shadow-lg">
-                Popular
-              </div>
-              <h3 className="text-xl font-bold text-[rgb(var(--color-text-primary))] mb-2">
-                Pro
-              </h3>
-              <p className="text-[rgb(var(--color-text-secondary))] mb-6">
-                Para criadores sérios
-              </p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-[rgb(var(--color-text-primary))]">
-                  R$19
-                </span>
-                <span className="text-[rgb(var(--color-text-muted))]">/mês</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <PricingFeature>Tudo do plano Free</PricingFeature>
-                <PricingFeature>Temas premium</PricingFeature>
-                <PricingFeature>Analytics de cliques</PricingFeature>
-                <PricingFeature>Cores personalizadas</PricingFeature>
-                <PricingFeature>Remoção da marca</PricingFeature>
-                <PricingFeature>Domínio próprio</PricingFeature>
-              </ul>
-              <Link href="/register" className="block">
-                <Button fullWidth>
-                  Assinar Pro
-                  <Sparkles className="w-4 h-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Trust Section - No Credit Card */}
+      <TrustHero />
 
-      {/* CTA Section */}
-      <section className="relative py-24 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[rgb(var(--color-text-primary))] mb-4">
-            Pronto para transformar sua presença digital?
-          </h2>
-          <p className="text-[rgb(var(--color-text-secondary))] mb-8">
-            Junte-se a milhares de criadores que já usam MyProfile
-          </p>
-          <Link href="/register">
-            <Button size="lg" className="shadow-lg shadow-[rgb(var(--color-primary))]/30">
-              Criar minha página grátis
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </section>
+      {/* Testimonials / Social Proof */}
+      <div id="depoimentos">
+        <Testimonials />
+      </div>
 
       {/* Footer */}
-      <footer className="relative py-12 px-4 border-t border-[rgb(var(--color-border))]">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <Link href="/" className="flex items-center gap-2 text-lg font-bold">
-              <div className="w-6 h-6 rounded bg-gradient-to-br from-[rgb(var(--color-primary))] to-[rgb(var(--color-accent))] flex items-center justify-center">
-                <Zap className="w-4 h-4 text-white" />
-              </div>
-              <span className="gradient-text">MyProfile</span>
-              <span className="text-[rgb(var(--color-text-primary))]">Pro</span>
-            </Link>
+      <Footer />
 
-            <div className="flex items-center gap-6 text-sm text-[rgb(var(--color-text-muted))]">
-              <Link href="/terms" className="hover:text-[rgb(var(--color-accent))]">
-                Termos
-              </Link>
-              <Link href="/privacy" className="hover:text-[rgb(var(--color-accent))]">
-                Privacidade
-              </Link>
-              <Link href="/contact" className="hover:text-[rgb(var(--color-accent))]">
-                Contato
-              </Link>
-            </div>
-
-            <p className="text-sm text-[rgb(var(--color-text-muted))]">
-              © 2026 MyProfile. Todos os direitos reservados.
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-}
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-  badge,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  badge?: string;
-}) {
-  return (
-    <div className="group relative p-6 rounded-2xl bg-[rgb(var(--color-surface))] border border-[rgb(var(--color-border))] hover:border-[rgb(var(--color-accent))]/50 transition-all duration-300">
-      {badge && (
-        <span className="absolute top-4 right-4 px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-[rgb(var(--color-primary))] to-[rgb(var(--color-accent))] text-white rounded-full">
-          {badge}
-        </span>
-      )}
-      <div className="w-12 h-12 mb-4 rounded-xl bg-gradient-to-br from-[rgb(var(--color-primary))]/20 to-[rgb(var(--color-accent))]/20 flex items-center justify-center text-[rgb(var(--color-accent))] group-hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-shadow duration-300">
-        {icon}
-      </div>
-      <h3 className="text-lg font-semibold text-[rgb(var(--color-text-primary))] mb-2">
-        {title}
-      </h3>
-      <p className="text-[rgb(var(--color-text-secondary))] text-sm">
-        {description}
-      </p>
-    </div>
-  );
-}
-
-function PricingFeature({ children }: { children: React.ReactNode }) {
-  return (
-    <li className="flex items-center gap-2 text-[rgb(var(--color-text-secondary))]">
-      <Check className="w-4 h-4 text-[rgb(var(--color-accent))]" />
-      {children}
-    </li>
+    </div >
   );
 }
