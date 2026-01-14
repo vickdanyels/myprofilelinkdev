@@ -9,7 +9,7 @@ import { TrustHero } from "@/components/home/TrustHero";
 import { Testimonials } from "@/components/home/Testimonials";
 import { Footer } from "@/components/home/Footer";
 import { trackHomeVisit } from "@/actions/analytics";
-
+import Link from "next/link";
 import { LiveBackgrounds } from "@/components/profile/LiveBackgrounds";
 
 const THEME = { primary: "236 72 153", accent: "6 182 212", background: "0 0 0" };
@@ -19,10 +19,16 @@ export default function HomePage() {
     trackHomeVisit();
   }, []);
 
+  const scrollToPricing = () => {
+    const element = document.getElementById('precos');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen relative flex flex-col overflow-x-hidden bg-black">
       {/* Global Background Particles */}
-      {/* Global Background - Elegant Cyber Grid */}
       <div className="fixed inset-0 z-0">
         <LiveBackgrounds type="tech-grid" enabled={true} themeColors={THEME} />
       </div>
@@ -45,7 +51,10 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 relative z-20">
 
             {/* --- CARD 1: THE PROBLEM (Styled like Solution) --- */}
-            <div className="group relative rounded-3xl transition-all duration-500 hover:scale-[1.02] hover:-rotate-1">
+            <div
+              className="group relative rounded-3xl transition-all duration-500 hover:scale-[1.02] hover:-rotate-1 cursor-pointer"
+              onClick={scrollToPricing}
+            >
               {/* Cyan Glow (Uniform Style) */}
               <div className="absolute -inset-0.5 bg-gradient-to-br from-[#67FEFD] to-blue-600 rounded-3xl blur opacity-20 group-hover:opacity-100 group-hover:blur-xl transition duration-700" />
 
@@ -75,6 +84,7 @@ export default function HomePage() {
                   <button
                     style={{ marginTop: "20px", marginBottom: "20px" }}
                     className="group/btn relative px-8 py-3 rounded-full bg-red-500/10 border border-red-500/50 text-red-500 font-bold text-sm uppercase tracking-widest overflow-hidden transition-all hover:bg-red-500 hover:text-white hover:shadow-[0_0_40px_rgba(239,68,68,0.4)] w-full max-w-[280px]"
+                    onClick={(e) => { e.stopPropagation(); scrollToPricing(); }}
                   >
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
                     <span className="relative flex items-center justify-center gap-3">
@@ -114,16 +124,17 @@ export default function HomePage() {
                     <strong className="block mt-4 text-white">Tudo organizado, DO SEU JEITO!</strong>
                   </p>
 
-                  <button
-                    style={{ marginTop: "20px", marginBottom: "20px" }}
-                    className="group/btn relative px-8 py-3 rounded-full bg-[rgb(var(--color-accent)_/_0.1)] border border-[rgb(var(--color-accent)_/_0.5)] text-[rgb(var(--color-accent))] font-bold text-sm uppercase tracking-widest overflow-hidden transition-all hover:bg-[rgb(var(--color-accent))] hover:text-black hover:shadow-[0_0_40px_rgba(6,182,212,0.4)] w-full max-w-[280px]"
-                  >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
-                    <span className="relative flex items-center justify-center gap-3">
-                      Teste Grátis
-                      <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                    </span>
-                  </button>
+                  <Link href="/register" className="w-full max-w-[280px]" style={{ marginTop: "20px", marginBottom: "20px" }}>
+                    <button
+                      className="group/btn relative px-8 py-3 rounded-full bg-[rgb(var(--color-accent)_/_0.1)] border border-[rgb(var(--color-accent)_/_0.5)] text-[rgb(var(--color-accent))] font-bold text-sm uppercase tracking-widest overflow-hidden transition-all hover:bg-[rgb(var(--color-accent))] hover:text-black hover:shadow-[0_0_40px_rgba(6,182,212,0.4)] w-full"
+                    >
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
+                      <span className="relative flex items-center justify-center gap-3">
+                        Teste Grátis
+                        <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                      </span>
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -131,8 +142,6 @@ export default function HomePage() {
 
         </div>
       </section>
-
-
 
       {/* Secondary Hero - Cinematic Conclusion */}
       <div id="funcionalidades">

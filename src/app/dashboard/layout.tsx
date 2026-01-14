@@ -53,7 +53,7 @@ export default async function DashboardLayout({
 
             {/* Desktop Sidebar - ALWAYS visible on lg+ screens */}
             <aside
-                className="w-64 flex-col fixed h-full z-30 bg-black/80 backdrop-blur-xl border-r border-white/10"
+                className="w-64 flex-col fixed h-full z-50 bg-black/80 backdrop-blur-xl border-r border-white/10"
                 style={{ display: 'none' }}
             >
                 {/* This will be overridden by media query in globals.css */}

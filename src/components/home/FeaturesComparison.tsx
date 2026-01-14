@@ -47,15 +47,15 @@ const FEATURES = [
         items: [
             { name: "Layout em Lista", free: true, pro: true, diamond: true, type: "check" },
             { name: "Layout em Grade (Grid)", free: false, pro: true, diamond: true, type: "check" },
+            { name: "Layout Carrossel 3D", free: false, pro: false, diamond: true, type: "check" },
             { name: "Temas Premium", free: false, pro: true, diamond: true, type: "check" },
             { name: "Live Backgrounds (+10)", free: false, pro: true, diamond: true, type: "check" },
-            { name: "Layout Carrossel 3D", free: false, pro: false, diamond: true, type: "check" },
         ]
     },
     {
         category: "Personalização",
         items: [
-            { name: "Links Ilimitados", free: true, pro: true, diamond: true, type: "check" },
+            { name: "Links Ativos", free: "2", pro: "20", diamond: "100", type: "text" },
             { name: "Bio e Avatar Customizáveis", free: true, pro: true, diamond: true, type: "check" },
             { name: "Moldura de Perfil", free: false, pro: "Dourada", diamond: "Neon", type: "text" },
             { name: "Remover Branding", free: false, pro: true, diamond: true, type: "check" },
@@ -64,9 +64,9 @@ const FEATURES = [
     {
         category: "Analytics",
         items: [
-            { name: "Contador de Cliques", free: true, pro: true, diamond: true, type: "check" },
-            { name: "Histórico de 30 Dias", free: true, pro: true, diamond: true, type: "check" },
-            { name: "Gráficos de Desempenho", free: true, pro: true, diamond: true, type: "check" },
+            { name: "Contador de Cliques", free: false, pro: true, diamond: true, type: "check" },
+            { name: "Histórico de 30 Dias", free: false, pro: true, diamond: true, type: "check" },
+            { name: "Gráficos de Desempenho", free: false, pro: false, diamond: true, type: "check" },
         ]
     }
 ];
@@ -165,9 +165,6 @@ export function FeaturesComparison() {
                                             {/* Label */}
                                             <div className="p-4 md:p-6 text-xs md:text-sm text-gray-300 flex items-center justify-center text-center font-medium border-r border-transparent">
                                                 <span className="group-hover:text-white transition-colors" style={{ fontFamily: 'var(--font-outfit), sans-serif' }}>{item.name}</span>
-                                                {item.diamond && !item.pro && (
-                                                    <Sparkles className="w-3 h-3 text-cyan-400 ml-2 animate-pulse hidden sm:block" />
-                                                )}
                                             </div>
 
                                             {/* Free Value */}

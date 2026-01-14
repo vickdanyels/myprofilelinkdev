@@ -62,7 +62,7 @@ export async function register(formData: FormData) {
     await signIn("credentials", {
         email,
         password,
-        redirectTo: "/dashboard",
+        redirect: false,
     });
 
     return { success: true };

@@ -10,7 +10,7 @@ import { BackgroundSelector } from "@/components/dashboard/BackgroundSelector";
 import { LayoutSelector } from "@/components/dashboard/LayoutSelector";
 import { PlanBadges } from "@/components/dashboard/PlanBadges";
 import { getThemeById, getDefaultTheme, Theme } from "@/lib/themes";
-import { ExternalLink, Eye, Link2, Sparkles, Palette } from "lucide-react";
+import { ExternalLink, Eye, Link2, Sparkles, Palette, Lock } from "lucide-react";
 import Link from "next/link";
 
 // Theme Status Card showing current theme colors
@@ -173,6 +173,7 @@ export default async function DashboardPage() {
                         label="Visualizações"
                         value={totalViews.toString()}
                         badge="PRO"
+                        isBlurred={profile.planType === "FREE"}
                     />
                 </Link>
                 <Link href="/dashboard/analytics">
@@ -181,6 +182,7 @@ export default async function DashboardPage() {
                         label="Cliques"
                         value={totalClicks.toString()}
                         badge="PRO"
+                        isBlurred={profile.planType === "FREE"}
                     />
                 </Link>
             </div>
@@ -195,7 +197,7 @@ export default async function DashboardPage() {
                         isPro={profile.isPro}
                         planType={profile.planType || "FREE"}
                     />
-                    <LinkManager links={profile.links} isPro={profile.isPro} buttonSize={profile.buttonSize || "regular"} />
+                    <LinkManager links={profile.links} userPlan={profile.planType || "FREE"} buttonSize={profile.buttonSize || "regular"} />
                     <LayoutSelector
                         currentLayout={profile.linksLayout || "list"}
                         isPro={profile.isPro}
@@ -223,11 +225,13 @@ function StatCard({
     label,
     value,
     badge,
+    isBlurred,
 }: {
     icon: React.ReactNode;
     label: string;
     value: string;
     badge?: string;
+    isBlurred?: boolean;
 }) {
     return (
         <Card padding="md" variant="glass" className="relative">
@@ -246,9 +250,14 @@ function StatCard({
                     <p className="text-sm text-[rgb(var(--color-text-secondary))]">
                         {label}
                     </p>
-                    <p className="text-2xl font-bold text-[rgb(var(--color-text-primary))]">
-                        {value}
-                    </p>
+                    <div className="flex items-center gap-2">
+                        <p className={`text-2xl font-bold text-[rgb(var(--color-text-primary))] ${isBlurred ? 'blur-sm select-none' : ''}`}>
+                            {value}
+                        </p>
+                        {isBlurred && (
+                            <Lock className="w-4 h-4 text-amber-400" />
+                        )}
+                    </div>
                 </div>
             </div>
         </Card>

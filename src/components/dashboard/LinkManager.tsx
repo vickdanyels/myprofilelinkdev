@@ -49,11 +49,15 @@ interface Link {
 
 interface LinkManagerProps {
     links: Link[];
-    isPro: boolean;
+    userPlan: 'FREE' | 'PRO' | 'DIAMOND';
     buttonSize: string;
 }
 
-const FREE_LINK_LIMIT = 3;
+const LINK_LIMITS = {
+    FREE: 2,
+    PRO: 20,
+    DIAMOND: 100
+};
 
 const ICONS: Record<string, typeof Instagram> = {
     instagram: Instagram,
@@ -76,13 +80,13 @@ const ICON_OPTIONS = [
 function SortableLinkItem({
     link,
     index,
-    isPro,
+    linkLimit,
     handleToggle,
     handleDelete
 }: {
     link: Link;
     index: number;
-    isPro: boolean;
+    linkLimit: number;
     handleToggle: (id: string) => void;
     handleDelete: (id: string, e: React.MouseEvent) => void;
 }) {
@@ -101,7 +105,7 @@ function SortableLinkItem({
 
     const IconComponent = link.icon ? ICONS[link.icon] : Globe;
 
-    const isOverLimit = !isPro && index >= FREE_LINK_LIMIT;
+    const isOverLimit = index >= linkLimit;
 
     return (
         <div
@@ -168,13 +172,15 @@ function SortableLinkItem({
     );
 }
 
-export function LinkManager({ links: initialLinks, isPro, buttonSize: initialSize }: LinkManagerProps) {
+export function LinkManager({ links: initialLinks, userPlan, buttonSize: initialSize }: LinkManagerProps) {
     const [links, setLinks] = useState<Link[]>(initialLinks);
     const [buttonSize, setButtonSize] = useState(initialSize);
     const [isAdding, setIsAdding] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
     const router = useRouter();
+
+    const linkLimit = LINK_LIMITS[userPlan] || LINK_LIMITS.FREE;
 
     useEffect(() => {
         setLinks(initialLinks);
@@ -185,8 +191,8 @@ export function LinkManager({ links: initialLinks, isPro, buttonSize: initialSiz
         setMounted(true);
     }, []);
 
-    const canAddMore = isPro || links.length < FREE_LINK_LIMIT;
-    const linksRemaining = FREE_LINK_LIMIT - links.length;
+    const canAddMore = links.length < linkLimit;
+    const linksRemaining = linkLimit - links.length;
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -274,11 +280,16 @@ export function LinkManager({ links: initialLinks, isPro, buttonSize: initialSiz
                         <h2 className="text-xl font-semibold text-[rgb(var(--color-text-primary))]">
                             Seus Links
                         </h2>
-                        {!isPro && (
+                        {userPlan === 'FREE' && (
                             <p className="text-sm text-[rgb(var(--color-text-muted))] mt-1">
                                 {linksRemaining > 0
-                                    ? `${links.length}/${FREE_LINK_LIMIT} links usados`
-                                    : "Limite de links atingido (Excedentes ocultos)"}
+                                    ? `${links.length}/${linkLimit} links usados`
+                                    : "Limite de links atingido"}
+                            </p>
+                        )}
+                        {userPlan !== 'FREE' && userPlan !== 'DIAMOND' && (
+                            <p className="text-sm text-[rgb(var(--color-text-muted))] mt-1">
+                                {`${links.length}/${linkLimit} links usados`}
                             </p>
                         )}
                     </div>
@@ -408,7 +419,7 @@ export function LinkManager({ links: initialLinks, isPro, buttonSize: initialSiz
                                     key={link.id}
                                     link={link}
                                     index={index}
-                                    isPro={isPro}
+                                    linkLimit={linkLimit}
                                     handleToggle={handleToggle}
                                     handleDelete={handleDelete}
                                 />

@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui";
-import { ArrowLeft, Users, MousePointer2, ExternalLink, Calendar } from "lucide-react";
+import { ArrowLeft, Users, MousePointer2, ExternalLink, Calendar, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 // Helper to format date as DD/MM
@@ -10,12 +10,74 @@ const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(date);
 };
 
+// Analytics access rules per plan
+const ANALYTICS_ACCESS = {
+    FREE: {
+        clickCounter: false,
+        history30Days: false,
+        performanceCharts: false
+    },
+    PRO: {
+        clickCounter: true,
+        history30Days: true,
+        performanceCharts: false
+    },
+    DIAMOND: {
+        clickCounter: true,
+        history30Days: true,
+        performanceCharts: true
+    }
+};
+
+// Component for blurred/restricted stats
+function BlurredStat({ value, canAccess, label }: { value: string | number, canAccess: boolean, label?: string }) {
+    if (canAccess) {
+        return <span>{value}</span>;
+    }
+    return (
+        <div className="relative inline-flex items-center gap-2">
+            <span className="blur-sm select-none text-gray-500">{value || "---"}</span>
+            <Lock className="w-4 h-4 text-amber-400" />
+        </div>
+    );
+}
+
+// Component for blurred chart section
+function BlurredChart({ children, canAccess }: { children: React.ReactNode, canAccess: boolean }) {
+    if (canAccess) {
+        return <>{children}</>;
+    }
+    return (
+        <div className="relative">
+            <div className="blur-sm select-none pointer-events-none">
+                {children}
+            </div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl">
+                <Lock className="w-8 h-8 text-amber-400 mb-2" />
+                <p className="text-amber-400 font-medium text-sm">Recurso DIAMOND</p>
+                <Link href="/dashboard/upgrade?plan=diamond" className="mt-2 text-xs text-cyan-400 hover:underline flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> Fazer Upgrade
+                </Link>
+            </div>
+        </div>
+    );
+}
+
 export default async function AnalyticsPage() {
     const session = await auth();
 
     if (!session?.user) {
         redirect("/login");
     }
+
+    // Fetch user with plan info
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { planType: true }
+    });
+
+    const userPlan = (user?.planType || "FREE") as keyof typeof ANALYTICS_ACCESS;
+    const access = ANALYTICS_ACCESS[userPlan];
 
     const profile = await prisma.profilePage.findUnique({
         where: { userId: session.user.id }
@@ -101,6 +163,11 @@ export default async function AnalyticsPage() {
                     <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">Analytics</h1>
                     <p className="text-[rgb(var(--color-text-secondary))]">Desempenho da sua página nos últimos 30 dias</p>
                 </div>
+                {userPlan === 'FREE' && (
+                    <Link href="/dashboard/upgrade" className="ml-auto px-4 py-2 bg-amber-500/10 text-amber-400 rounded-xl text-sm font-medium flex items-center gap-2 hover:bg-amber-500/20 transition-colors">
+                        <Lock className="w-4 h-4" /> Upgrade para ver dados
+                    </Link>
+                )}
             </div>
 
             {/* Summary Cards */}
@@ -112,7 +179,9 @@ export default async function AnalyticsPage() {
                         </div>
                         <div>
                             <p className="text-sm text-[rgb(var(--color-text-secondary))]">Total de Visitas</p>
-                            <p className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{views.length}</p>
+                            <p className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">
+                                <BlurredStat value={views.length} canAccess={access.clickCounter} />
+                            </p>
                         </div>
                     </div>
                 </Card>
@@ -123,7 +192,9 @@ export default async function AnalyticsPage() {
                         </div>
                         <div>
                             <p className="text-sm text-[rgb(var(--color-text-secondary))]">Total de Cliques</p>
-                            <p className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{clicks.length}</p>
+                            <p className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">
+                                <BlurredStat value={clicks.length} canAccess={access.clickCounter} />
+                            </p>
                         </div>
                     </div>
                 </Card>
@@ -134,34 +205,36 @@ export default async function AnalyticsPage() {
                 <h3 className="text-lg font-semibold mb-6 flex items-center gap-2 text-[rgb(var(--color-text-primary))]">
                     <Calendar className="w-4 h-4" /> Desempenho Diário
                 </h3>
-                <div className="h-48 flex items-end justify-between gap-1">
-                    {Object.entries(dailyStats).map(([date, stats], i) => (
-                        <div key={date} className="flex-1 flex flex-col justify-end gap-1 group relative">
-                            {/* Tooltip */}
-                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap pointer-events-none">
-                                {date}: {stats.views} views, {stats.clicks} clicks
+                <BlurredChart canAccess={access.performanceCharts}>
+                    <div className="h-48 flex items-end justify-between gap-1">
+                        {Object.entries(dailyStats).map(([date, stats], i) => (
+                            <div key={date} className="flex-1 flex flex-col justify-end gap-1 group relative">
+                                {/* Tooltip */}
+                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap pointer-events-none">
+                                    {date}: {stats.views} views, {stats.clicks} clicks
+                                </div>
+
+                                {/* View Bar */}
+                                <div
+                                    className="w-full bg-blue-500/50 rounded-t-sm transition-all hover:bg-blue-500/80"
+                                    style={{ height: `${(stats.views / maxViews) * 100}%`, minHeight: stats.views > 0 ? '4px' : '0' }}
+                                />
+                                {/* Click Bar */}
+                                <div
+                                    className="w-full bg-purple-500/50 rounded-t-sm -mt-1 mix-blend-screen transition-all hover:bg-purple-500/80"
+                                    style={{ height: `${(stats.clicks / maxClicks) * 100}%`, minHeight: stats.clicks > 0 ? '4px' : '0' }}
+                                />
+
+                                {/* X Axis Label (every 5 days) */}
+                                {i % 5 === 0 && (
+                                    <span className="absolute top-full mt-2 text-[10px] text-[rgb(var(--color-text-secondary))] -rotate-45 origin-top-left">
+                                        {date}
+                                    </span>
+                                )}
                             </div>
-
-                            {/* View Bar */}
-                            <div
-                                className="w-full bg-blue-500/50 rounded-t-sm transition-all hover:bg-blue-500/80"
-                                style={{ height: `${(stats.views / maxViews) * 100}%`, minHeight: stats.views > 0 ? '4px' : '0' }}
-                            />
-                            {/* Click Bar */}
-                            <div
-                                className="w-full bg-purple-500/50 rounded-t-sm -mt-1 mix-blend-screen transition-all hover:bg-purple-500/80"
-                                style={{ height: `${(stats.clicks / maxClicks) * 100}%`, minHeight: stats.clicks > 0 ? '4px' : '0' }}
-                            />
-
-                            {/* X Axis Label (every 5 days) */}
-                            {i % 5 === 0 && (
-                                <span className="absolute top-full mt-2 text-[10px] text-[rgb(var(--color-text-secondary))] -rotate-45 origin-top-left">
-                                    {date}
-                                </span>
-                            )}
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                </BlurredChart>
             </Card>
 
             {/* Links Table */}
@@ -201,11 +274,11 @@ export default async function AnalyticsPage() {
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <span className="inline-flex items-center justify-center min-w-[2rem] font-bold text-[rgb(var(--color-text-primary))] text-base">
-                                            {link.clicks}
+                                            <BlurredStat value={link.clicks} canAccess={access.history30Days} />
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-center text-[rgb(var(--color-text-secondary))]">
-                                        {formatDate(new Date(link.lastClick))}
+                                        {access.history30Days ? formatDate(new Date(link.lastClick)) : <BlurredStat value="--/--" canAccess={false} />}
                                     </td>
                                 </tr>
                             ))}

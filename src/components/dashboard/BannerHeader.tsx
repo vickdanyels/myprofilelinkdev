@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 /**
@@ -39,20 +39,16 @@ export function BannerHeader({
     link,
     alt = "Banner promocional"
 }: BannerHeaderProps) {
-    const [currentBanner, setCurrentBanner] = useState<string>(desktopBanner);
     const [bannerHeight, setBannerHeight] = useState<number>(80);
 
     useEffect(() => {
         const updateBanner = () => {
             const width = window.innerWidth;
             if (width >= 1024) {
-                setCurrentBanner(desktopBanner);
                 setBannerHeight(80);
             } else if (width >= 768) {
-                setCurrentBanner(tabletBanner);
                 setBannerHeight(70);
             } else {
-                setCurrentBanner(mobileBanner);
                 setBannerHeight(60);
             }
         };
@@ -60,7 +56,7 @@ export function BannerHeader({
         updateBanner();
         window.addEventListener("resize", updateBanner);
         return () => window.removeEventListener("resize", updateBanner);
-    }, [desktopBanner, tabletBanner, mobileBanner]);
+    }, []);
 
     const bannerContent = (
         <div
@@ -73,23 +69,30 @@ export function BannerHeader({
                 <div className="absolute top-[-50%] left-1/2 -translate-x-1/2 w-[40%] h-[200px] bg-amber-500/10 blur-[80px] rounded-full" />
             </div>
 
-            {/* Placeholder when no banner image is set */}
-            <div className="relative w-full h-full flex items-center justify-center">
-                {/* Banner text placeholder - remove when adding real banner */}
-                <span className="relative text-sm text-gray-500 font-medium tracking-wide">
-                    BANNER • {bannerHeight === 80 ? 'DESKTOP 1920×80' : bannerHeight === 70 ? 'TABLET 1024×70' : 'MOBILE 768×60'}
-                </span>
+            {/* "Comprar dias:" buttons */}
+            <div className="relative w-full h-full flex items-center justify-center gap-4 md:gap-6 px-4">
+                <span className="text-sm text-gray-400 font-medium hidden sm:block">Comprar dias:</span>
+
+                {/* PRO Badge Button */}
+                <Link
+                    href="/dashboard/upgrade?plan=pro"
+                    className="pro-badge px-4 py-2 rounded-full font-bold text-sm text-black flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+                >
+                    <span className="text-base drop-shadow-md">👑</span>
+                    <span className="tracking-wider">PRO</span>
+                </Link>
+
+                {/* DIAMOND Badge Button */}
+                <Link
+                    href="/dashboard/upgrade?plan=diamond"
+                    className="diamond-badge px-4 py-2 rounded-full font-bold text-sm text-white flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(103,254,253,0.5)]"
+                >
+                    <span className="text-base drop-shadow-md">💎</span>
+                    <span className="tracking-wider">DIAMOND</span>
+                </Link>
             </div>
         </div>
     );
-
-    if (link) {
-        return (
-            <a href={link} target="_blank" rel="noopener noreferrer" className="block">
-                {bannerContent}
-            </a>
-        );
-    }
 
     return bannerContent;
 }

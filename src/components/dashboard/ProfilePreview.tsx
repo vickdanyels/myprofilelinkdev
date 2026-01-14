@@ -70,7 +70,7 @@ export function ProfilePreview({ profile }: ProfilePreviewProps) {
                     {/* Iframe for Perfect Fidelity */}
                     <div className="w-full h-full bg-[rgb(var(--color-background))] overflow-hidden rounded-[2.5rem]">
                         <iframe
-                            src={`/${profile.username}?t=${timestamp}`}
+                            src={`/${profile.username}?t=${timestamp}&preview=true`}
                             title="Profile Preview"
                             // Logical resolution for iPhone 14 Pro: 393x852
                             className="w-[393px] h-[852px] origin-top-left"

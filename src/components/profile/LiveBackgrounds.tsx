@@ -11,13 +11,18 @@ interface LiveBackgroundsProps {
         background: string;
         textSecondary?: string;
     };
+    warpSpeedBoost?: boolean; // Trigger for hyperspace effect
+    className?: string; // Allow overriding fixed positioning
+    starCount?: number; // Optional override for particle count
+    disableMouseInteraction?: boolean; // Optional disable for side movement
+    speedMultiplier?: number; // Optional speed multiplier for warped speed
 }
 
-export const LiveBackgrounds = memo(function LiveBackgrounds({ type, enabled, themeColors }: LiveBackgroundsProps) {
+export const LiveBackgrounds = memo(function LiveBackgrounds({ type, enabled, themeColors, warpSpeedBoost, className, starCount, disableMouseInteraction, speedMultiplier }: LiveBackgroundsProps) {
     if (!enabled || type === "none") return null;
 
     return (
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className={className || "fixed inset-0 z-0 pointer-events-none overflow-hidden"}>
             {type === "particles" && <ParticlesBackground colors={themeColors} />}
             {type === "wave" && <WaveBackground colors={themeColors} />}
             {type === "gradient" && <GradientBackground colors={themeColors} />}
@@ -35,9 +40,466 @@ export const LiveBackgrounds = memo(function LiveBackgrounds({ type, enabled, th
             {type === "petshop" && <IconFloatBackground colors={themeColors} icons={["🐾", "🐾", "🐕", "🐈"]} isText />}
             {/* New Technological Background */}
             {type === "tech-grid" && <TechGridBackground colors={themeColors} />}
+            {type === "flow-field" && <FlowFieldBackground themeColors={themeColors} />}
+            {type === "warp-speed" && <WarpSpeedBackground themeColors={themeColors} boost={warpSpeedBoost} starCount={starCount} disableMouseInteraction={disableMouseInteraction} speedMultiplier={speedMultiplier} />}
         </div>
     );
 });
+
+// --- Warp Speed Background (Hyperdrive) ---
+function WarpSpeedBackground({ themeColors, boost, starCount: customStarCount, disableMouseInteraction, speedMultiplier = 1 }: { themeColors: LiveBackgroundsProps["themeColors"]; boost?: boolean; starCount?: number; disableMouseInteraction?: boolean; speedMultiplier?: number }) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const boostRef = useRef(boost);
+
+    // Refs for Smooth Color Transition
+    const currentColorsRef = useRef({ primary: themeColors.primary, accent: themeColors.accent });
+    const targetColorsRef = useRef({ primary: themeColors.primary, accent: themeColors.accent });
+
+    // Ref for Smooth Speed Transition
+    const currentSpeedMultiplierRef = useRef(speedMultiplier);
+    const targetSpeedMultiplierRef = useRef(speedMultiplier);
+
+    // Helper: Parse RGB string "255 255 255" to [255, 255, 255]
+    const parseRGB = (rgb: string) => rgb.split(' ').map(Number);
+    // Helper: Lerp between two values
+    const lerp = (start: number, end: number, t: number) => start + (end - start) * t;
+    // Helper: Lerp RGB arrays and return string
+    const lerpColor = (current: string, target: string, t: number) => {
+        const c = parseRGB(current);
+        const tg = parseRGB(target);
+        if (c.length !== 3 || tg.length !== 3) return target;
+        const r = Math.round(lerp(c[0], tg[0], t));
+        const g = Math.round(lerp(c[1], tg[1], t));
+        const b = Math.round(lerp(c[2], tg[2], t));
+        return `${r} ${g} ${b}`;
+    };
+
+    // Update ref without triggering re-render of effect
+    useEffect(() => {
+        boostRef.current = boost;
+    }, [boost]);
+
+    // Update target colors when prop changes
+    useEffect(() => {
+        targetColorsRef.current = { primary: themeColors.primary, accent: themeColors.accent };
+    }, [themeColors]);
+
+    // Update target speed when prop changes
+    useEffect(() => {
+        targetSpeedMultiplierRef.current = speedMultiplier;
+    }, [speedMultiplier]);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        let animationFrameId: number;
+        let width = canvas.parentElement?.clientWidth || window.innerWidth;
+        let height = canvas.parentElement?.clientHeight || window.innerHeight;
+        let stars: Star[] = [];
+
+        // Configuration
+        const isSmallScreen = width < 768;
+        // Logic: Use customStarCount if provided, otherwise default to 750 (desktop) / 400 (mobile)
+        const starCount = customStarCount !== undefined ? customStarCount : (isSmallScreen ? 400 : 750);
+
+        // Speed Contants
+        const BASE_SPEED = 40;
+        const BOOST_SPEED = 120; // 3x speed for boost
+        let currentSimSpeed = BASE_SPEED; // Mutable speed
+
+        const depth = 15000; // Deep Universe
+
+        // Smooth Mouse Movement Variables
+        let targetMouseX = 0;
+        let targetMouseY = 0;
+        let currentMouseX = 0;
+        let currentMouseY = 0;
+
+        const handleResize = () => {
+            width = canvas.parentElement?.clientWidth || window.innerWidth;
+            height = canvas.parentElement?.clientHeight || window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            // Center absolute 0,0 is now middle of screen for easier math
+            ctx.translate(width / 2, height / 2);
+        };
+
+        class Star {
+            x: number;
+            y: number;
+            z: number;
+            pz: number; // Previous Z (for trails)
+
+            constructor() {
+                this.x = (Math.random() - 0.5) * width * 6;
+                this.y = (Math.random() - 0.5) * height * 6;
+                this.z = Math.random() * depth;
+                this.pz = this.z;
+            }
+
+            update() {
+                this.pz = this.z; // Store z before moving
+                this.z -= currentSimSpeed;
+
+                // If star passes camera (or is too close), reset directly to back
+                if (this.z < 1) {
+                    this.z = depth;
+                    this.pz = depth;
+                    this.x = (Math.random() - 0.5) * width * 6;
+                    this.y = (Math.random() - 0.5) * height * 6;
+                }
+            }
+
+            draw() {
+                if (!ctx) return;
+
+                // Perspective Projection
+                // sx = screen x, sy = screen y
+                const sx = (this.x / this.z) * 1000; // 1000 is FOV scalar
+                const sy = (this.y / this.z) * 1000;
+
+                // Previous position (for trail tail)
+                const px = (this.x / this.pz) * 1000;
+                const py = (this.y / this.pz) * 1000;
+
+                // Don't draw if out of bounds (optimization)
+                // Note: we translated context to center, so bounds are +/- width/2
+                if (Math.abs(sx) > width || Math.abs(sy) > height) return;
+
+                // Visuals
+                // Custom Opacity Curve (15k Depth):
+
+                let opacity = 0;
+                if (this.z > 12000) {
+                    opacity = 0.5 * (1 - (this.z - 12000) / 3000);
+                } else if (this.z > 11000) {
+                    opacity = 1.0 - 0.5 * ((this.z - 11000) / 1000);
+                } else {
+                    opacity = 1.0;
+                }
+
+                // Re-calculate r for size/width logic (0 to 1)
+                const r = (1 - this.z / depth);
+
+                // --- EXTENDED TRAIL (Dark Teal - Behind) ---
+                // Calculate position even further back for the trail
+                // Dynamic Trail Length: Far = 2x speed, Close = up to 6x speed
+                const trailLengthFactor = 2 + (r * 4);
+                const trailZ = this.z + (currentSimSpeed * trailLengthFactor);
+                const tx = (this.x / trailZ) * 1000;
+                const ty = (this.y / trailZ) * 1000;
+
+                ctx.beginPath();
+                ctx.moveTo(tx, ty); // Start from far back
+                ctx.lineTo(sx, sy); // Go to current head
+
+                // Style: Use interpolated Primary color for trails
+                const primaryRGB = currentColorsRef.current.primary;
+                ctx.lineWidth = 2.4 + (r * 3.6);
+                ctx.lineCap = "round";
+                // Trail uses Primary Color
+                ctx.strokeStyle = `rgba(${primaryRGB}, ${opacity * 0.6})`;
+                ctx.stroke();
+
+                // --- MAIN PARTICLE (Cyan - Front) ---
+                ctx.beginPath();
+                ctx.moveTo(px, py); // From standard previous (short trail)
+                ctx.lineTo(sx, sy); // To current head
+
+                // Style: Use interpolated Accent color
+                const accentRGB = currentColorsRef.current.accent;
+                ctx.lineWidth = 2.4 + (r * 3.6);
+                ctx.lineCap = "round";
+                ctx.strokeStyle = `rgb(${accentRGB} / ${opacity})`;
+
+                // No ShadowBlur (Performance)
+                ctx.shadowBlur = 0;
+
+                ctx.stroke();
+            }
+        }
+
+        const init = () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            stars = [];
+            for (let i = 0; i < starCount; i++) {
+                stars.push(new Star());
+            }
+
+            // Mouse Interaction
+            if (!disableMouseInteraction) {
+                window.addEventListener("mousemove", (e) => {
+                    // Calculate offset from center (e.g. -0.5 to 0.5)
+                    const nx = (e.clientX / window.innerWidth) - 0.5;
+                    const ny = (e.clientY / window.innerHeight) - 0.5;
+
+                    // Set TARGET position based on device
+                    // Desktop (>768px): 1000px X, 600px Y
+                    // Mobile: Keep smaller to avoid disorientation (if event fires)
+                    const isDesktop = window.innerWidth > 768;
+                    const limitX = isDesktop ? 1000 : 300;
+                    const limitY = isDesktop ? 600 : 200;
+
+                    targetMouseX = nx * limitX;
+                    targetMouseY = ny * limitY;
+                });
+            }
+        };
+
+        const animate = () => {
+            // Smoothly interpolate colors (approx 5% per frame)
+            const lerpSpeed = 0.05;
+            currentColorsRef.current.primary = lerpColor(currentColorsRef.current.primary, targetColorsRef.current.primary, lerpSpeed);
+            currentColorsRef.current.accent = lerpColor(currentColorsRef.current.accent, targetColorsRef.current.accent, lerpSpeed);
+
+            // Smoothly interpolate speed multiplier
+            // Using a slightly slower lerp (2%) for that "bezier" feel or just smooth ramp
+            const speedLerp = 0.02;
+            currentSpeedMultiplierRef.current = lerp(currentSpeedMultiplierRef.current, targetSpeedMultiplierRef.current, speedLerp);
+
+            // Update Speed based on boost state and multiplier
+            const targetBaseSpeed = boostRef.current ? BOOST_SPEED : BASE_SPEED;
+            const finalTargetSpeed = targetBaseSpeed * currentSpeedMultiplierRef.current;
+
+            // Smooth acceleration towards final target speed
+            currentSimSpeed += (finalTargetSpeed - currentSimSpeed) * 0.05; // 5% approach to target
+
+            // Note: Since we use ctx.translate in handleResize, we must reset or account for it in clearRect
+            // Easier way: Save/Restore context or just fillRect huge area
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform for clearing
+
+            // Black background
+            ctx.fillStyle = "rgb(0, 0, 0)";
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.restore(); // Restore center translation logic if we moved it?
+
+            // SMOOTH INTERPOLATION (Lerp)
+            // Move current position 5% towards target every frame
+            currentMouseX += (targetMouseX - currentMouseX) * 0.05;
+            currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+
+            // Wait, handleResize is called once, but animate loops.
+            // We need to ensure 0,0 is center every frame? 
+            // Better: Translate every frame.
+            ctx.save();
+            // SHIFT CENTER BASED ON SMOOTH MOUSE
+            ctx.translate((width / 2) - currentMouseX, (height / 2) - currentMouseY);
+
+            // Additive Blending for Glow
+            ctx.globalCompositeOperation = "lighter";
+
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            ctx.restore();
+
+            animationFrameId = requestAnimationFrame(animate);
+        };
+
+        init();
+        window.addEventListener("resize", handleResize);
+        animate();
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [customStarCount, disableMouseInteraction]); // Removed themeColors and speedMultiplier from dependency to avoid full reset
+
+    return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
+}
+
+
+
+// --- Flow Field Background (High Complexity) ---
+function FlowFieldBackground({ themeColors }: { themeColors: LiveBackgroundsProps["themeColors"] }) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        let animationFrameId: number;
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let particles: Particle[] = [];
+        let flowField: number[] = [];
+        const scale = 20; // Grid cell size
+        let cols = Math.floor(width / scale);
+        let rows = Math.floor(height / scale);
+        let zOff = 0; // Time dimension for noise
+
+        // Pseudo-Perlin Noise (Simplex-ish)
+        // A simple hash function effectively for noise
+        const noise = (x: number, y: number, z: number) => {
+            const p = [151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33, 88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166, 77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244, 102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196, 135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123, 5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42, 223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9, 129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254, 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
+            const fade = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
+            const lerp = (t: number, a: number, b: number) => a + t * (b - a);
+            const grad = (hash: number, x: number, y: number, z: number) => {
+                const h = hash & 15;
+                const u = h < 8 ? x : y;
+                const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            };
+            const X = Math.floor(x) & 255;
+            const Y = Math.floor(y) & 255;
+            const Z = Math.floor(z) & 255;
+            x -= Math.floor(x);
+            y -= Math.floor(y);
+            z -= Math.floor(z);
+            const u = fade(x);
+            const v = fade(y);
+            const w = fade(z);
+            const A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z;
+            const B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z;
+            return lerp(w, lerp(v, lerp(u, grad(p[AA], x, y, z), grad(p[BA], x - 1, y, z)), lerp(u, grad(p[AB], x, y - 1, z), grad(p[BB], x - 1, y - 1, z))), lerp(v, lerp(u, grad(p[AA + 1], x, y, z - 1), grad(p[BA + 1], x - 1, y, z - 1)), lerp(u, grad(p[AB + 1], x, y - 1, z - 1), grad(p[BB + 1], x - 1, y - 1, z - 1))));
+        }
+
+        class Particle {
+            x: number;
+            y: number;
+            vx: number;
+            vy: number;
+            color: string;
+            maxSpeed: number;
+            prevX: number;
+            prevY: number;
+
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = 0;
+                this.vy = 0;
+                this.prevX = this.x;
+                this.prevY = this.y;
+                this.maxSpeed = 2 + Math.random() * 2;
+
+                // Color Distribution
+                const rand = Math.random();
+                if (rand > 0.6) this.color = `rgba(${themeColors.primary}, 0.5)`;
+                else if (rand > 0.3) this.color = `rgba(${themeColors.accent}, 0.5)`;
+                else this.color = "rgba(255, 255, 255, 0.3)";
+            }
+
+            update(flowField: number[]) {
+                this.prevX = this.x;
+                this.prevY = this.y;
+
+                // Find grid position
+                const x = Math.floor(this.x / scale);
+                const y = Math.floor(this.y / scale);
+                const index = x + y * cols;
+
+                if (flowField[index]) {
+                    const angle = flowField[index];
+                    this.vx += Math.cos(angle) * 0.5; // Steering force
+                    this.vy += Math.sin(angle) * 0.5;
+                }
+
+                // Limit speed
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > this.maxSpeed) {
+                    this.vx = (this.vx / speed) * this.maxSpeed;
+                    this.vy = (this.vy / speed) * this.maxSpeed;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Wrap around with resetting trail
+                if (this.x > width) { this.x = 0; this.prevX = 0; }
+                if (this.x < 0) { this.x = width; this.prevX = width; }
+                if (this.y > height) { this.y = 0; this.prevY = 0; }
+                if (this.y < 0) { this.y = height; this.prevY = height; }
+            }
+
+            draw(ctx: CanvasRenderingContext2D) {
+                ctx.beginPath();
+                ctx.moveTo(this.prevX, this.prevY);
+                ctx.lineTo(this.x, this.y);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+        }
+
+        const init = () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            cols = Math.floor(width / scale);
+            rows = Math.floor(height / scale);
+            flowField = new Array(cols * rows);
+
+            particles = [];
+            const particleCount = 800; // Optimized for 60FPS
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            // Initial Black Fill
+            ctx.fillStyle = `rgb(${themeColors.background})`;
+            ctx.fillRect(0, 0, width, height);
+        };
+
+        const animate = () => {
+            // Trail Effect: Fade out previous frames slowly
+            ctx.globalCompositeOperation = "source-over";
+            ctx.fillStyle = `rgba(0, 0, 0, 0.08)`; // Slightly faster fade for cleaner look
+            ctx.fillRect(0, 0, width, height);
+
+            // Enable High Performance Glow (Additive Blending only)
+            // Removed shadowBlur as it causes severe lag on many devices
+            ctx.globalCompositeOperation = "lighter";
+
+            // Calculate Flow Field
+            let yoff = 0;
+            for (let y = 0; y < rows; y++) {
+                let xoff = 0;
+                for (let x = 0; x < cols; x++) {
+                    const index = x + y * cols;
+                    // Noise Angle: 0 to 4PI (Two full rotations for swirlyness)
+                    const angle = noise(xoff, yoff, zOff) * Math.PI * 4;
+                    flowField[index] = angle;
+                    xoff += 0.1;
+                }
+                yoff += 0.1;
+            }
+            zOff += 0.003; // Time step
+
+            particles.forEach(p => {
+                p.update(flowField);
+                p.draw(ctx);
+            });
+
+            animationFrameId = requestAnimationFrame(animate);
+        };
+
+        init();
+        window.addEventListener("resize", init);
+        animate();
+
+        return () => {
+            window.removeEventListener("resize", init);
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [themeColors]);
+
+    return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
+}
 
 // --- Hyperliquid Background ---
 export function HyperliquidBackground({ colors }: { colors: LiveBackgroundsProps["themeColors"] }) {

@@ -11,8 +11,8 @@ const FOOTER_LINKS = {
         { label: "Templates", href: "#templates" },
     ],
     legal: [
-        { label: "Termos de Uso", href: "/termos" },
-        { label: "Privacidade", href: "/privacidade" },
+        { label: "Termos de Uso", href: "/terms" },
+        { label: "Privacidade", href: "/privacy" },
         { label: "Cookies", href: "/cookies" },
     ],
 };

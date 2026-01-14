@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { CreditCard, Gift, Sparkles, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { LiveBackgrounds } from "@/components/profile/LiveBackgrounds";
 
 const TRUST_ITEMS = [
     { icon: Gift, text: "15 dias de Pro Grátis", highlight: true },
@@ -10,6 +11,12 @@ const TRUST_ITEMS = [
     { icon: Sparkles, text: "Acesso total imediato" },
     { icon: Heart, text: "Cancele quando quiser" }
 ];
+
+const INFLUENCER_THEME_BG = {
+    primary: "251 191 36", // Claro (Amber-400)
+    accent: "234 179 8",   // Escuro (Yellow-500)
+    background: "0 0 0"
+};
 
 export function TrustHero() {
     const router = useRouter();
@@ -20,6 +27,14 @@ export function TrustHero() {
             <div className="w-full h-px bg-gradient-to-r from-transparent via-[rgb(var(--color-accent))] to-transparent opacity-80 shadow-[0_0_15px_rgba(6,182,212,0.5)] relative z-20" />
 
             <section className="relative z-10 w-full py-24 bg-black overflow-hidden">
+                <LiveBackgrounds
+                    type="warp-speed"
+                    enabled={true}
+                    themeColors={INFLUENCER_THEME_BG}
+                    className="absolute inset-0 z-0 pointer-events-none"
+                    starCount={500}
+                    disableMouseInteraction={true}
+                />
 
                 {/* Background Glow */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-radial from-cyan-500/10 via-transparent to-transparent blur-[100px] pointer-events-none" />
